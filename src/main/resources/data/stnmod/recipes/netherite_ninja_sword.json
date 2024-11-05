@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I  ",
+    " I ",
+    "  S"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "stnmod:netherite_ninja_sword",
+    "count": 1
+  }
+}

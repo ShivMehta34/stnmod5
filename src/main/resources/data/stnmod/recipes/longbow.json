@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TS ",
+    "TIS",
+    "TS "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "T": {
+      "item": "minecraft:string"
+    }
+  },
+  "result": {
+    "item": "stnmod:longbow",
+    "count": 1
+  }
+}

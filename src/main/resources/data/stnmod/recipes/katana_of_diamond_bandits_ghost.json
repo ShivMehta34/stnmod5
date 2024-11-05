@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  I",
+    " IH",
+    "S  "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:diamond"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "H": {
+      "item": "minecraft:leather_helmet"
+    }
+  },
+  "result": {
+    "item": "stnmod:katana_of_diamond_bandits_ghost",
+    "count": 1
+  }
+}

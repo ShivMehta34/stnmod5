@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "stnmod:block/upgrade_table_book" }
+  }
+}

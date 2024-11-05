@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "stnmod:item/ninja_robe_leggings"
+  }
+}

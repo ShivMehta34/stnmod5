@@ -1,0 +1,6 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "stnmod:item/katana_of_diamond_bandits_ghost"
+  }
+}

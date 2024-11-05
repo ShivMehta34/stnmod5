@@ -1,0 +1,42 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "stnmod:block/upgrade_table_side",
+    "bottom": "stnmod:block/upgrade_table_bottom",
+    "top": "stnmod:block/upgrade_table_top",
+    "side": "stnmod:block/upgrade_table_side",
+    "book": "stnmod:block/upgrade_table_book"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 12, 16],
+      "faces": {
+        "down": {"texture": "#bottom", "cullface": "down"},
+        "up": {"texture": "#top"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "east": {"texture": "#side"}
+      }
+    },
+    {
+      "from": [4, 10, 4],
+      "to": [12, 16, 12],
+      "rotation": {
+        "origin": [8, 10, 8],
+        "axis": "y",
+        "angle": 0,
+        "rescale": false
+      },
+      "faces": {
+        "up": {"texture": "#book"},
+        "down": {"texture": "#book"},
+        "north": {"texture": "#book"},
+        "south": {"texture": "#book"},
+        "west": {"texture": "#book"},
+        "east": {"texture": "#book"}
+      }
+    }
+  ]
+}

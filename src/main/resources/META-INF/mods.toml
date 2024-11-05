@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+issueTrackerURL="https://github.com/your-repo/issues"
+
+[[mods]]
+modId="stnmod"
+version="1.0.0"
+displayName="STN Mod"
+description="A Minecraft mod."
+
+[[dependencies.stnmod]]
+modId="forge"
+mandatory=true
+versionRange="[47.3.5,)"
+side="BOTH"
+
+[modProperties]
+mixinConfigs="mixins.stnmod.json, mixins.geckolib.json"
+

@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "stnmod:block/obsidian_blast_furnace_side",
+    "north": "stnmod:block/obsidian_blast_furnace_front",
+    "south": "stnmod:block/obsidian_blast_furnace_front",
+    "east": "stnmod:block/obsidian_blast_furnace_front",
+    "west": "stnmod:block/obsidian_blast_furnace_front",
+    "up": "stnmod:block/obsidian_blast_furnace_top",
+    "down": "minecraft:block/obsidian"
+  }
+}
