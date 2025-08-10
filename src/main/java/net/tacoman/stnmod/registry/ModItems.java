@@ -31,6 +31,7 @@ public class ModItems {
     public static final RegistryObject<Item> KNIGHT_BOOTS = ITEMS.register("knight_boots",
             () -> new ArmorItem(ModArmorMaterials.KNIGHT, ArmorItem.Type.BOOTS, new Item.Properties()));
 
+
     public static void register() {
         ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }

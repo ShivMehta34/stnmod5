@@ -68,6 +68,8 @@ public class KeyBindings {
     private static long lastDefensiveAuraTime = 0; // To track the last time Defensive Aura was used
     private static long lastReinforceShieldTime = 0; // To track the last time Defensive Aura was used
     private static long lastArrowTime = 0;
+    private static long lastWhirlwindTime = 0;
+    private static long lastDashingStrikeTime = 0;
 
 
     private static Entity targetedEntity; // Store the entity targeted by Armor Breaker
@@ -84,6 +86,8 @@ public class KeyBindings {
     private static final long DEFENSIVE_AURA_COOLDOWN = 120000; // 2 minutes cooldown
     private static final long REINFORCE_SHIELD_COOLDOWN = 120000; // 2 minutes cooldown
     private static final long ARROW_COOLDOWN = 60000; // 1 minute cooldown
+    private static final long WHIRLWIND_COOLDOWN = 12000; // 12s
+    private static final long DASHING_STRIKE_COOLDOWN = 8000;
 
 
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -208,42 +212,18 @@ public class KeyBindings {
                 long timeLeft = SHIELD_BASH_COOLDOWN - (currentTime - lastShieldBashTime);
                 if (timeLeft <= 0) {
                     lastShieldBashTime = currentTime;
-                    LOGGER.info("Shield Bash ability key pressed by player (Knight): " + player.getName().getString());
+                    LOGGER.info("Shield Bash key pressed by (Knight): " + player.getName().getString());
 
-                    player.sendSystemMessage(Component.literal("Shield Bash ready! Attack a target to bash them."));
+                    player.sendSystemMessage(Component.literal("Shield Bash ready! Hit something within 3s."));
 
-                    // Register a listener for the next entity hit
-                    Object shieldBashEventListener = new Object() {
-                        @SubscribeEvent
-                        public void onEntityHit(AttackEntityEvent event) {
-                            if (event.getEntity().equals(player)) {
-                                Entity target = event.getTarget();
-
-                                // Perform the Shield Bash animation and sound
-                                player.swing(InteractionHand.OFF_HAND); // Makes the player swing the off-hand
-                                player.getCommandSenderWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
-
-                                // Apply knockback to the target
-                                Vec3 knockbackDirection = target.position().subtract(player.position()).normalize();
-                                target.setDeltaMovement(knockbackDirection.scale(1.5)); // Adjust the scaling factor as needed for knockback strength
-
-                                // Apply stun effect (slowness) and max weakness to the target
-                                if (target instanceof LivingEntity livingTarget) {
-                                    livingTarget.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 4)); // Stun effect
-                                    livingTarget.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 255)); // Max weakness effect
-                                }
-
-                                player.sendSystemMessage(Component.literal("You performed a Shield Bash! Target stunned!"));
-                                MinecraftForge.EVENT_BUS.unregister(this); // Unregister after applying the effect
-                            }
-                        }
-                    };
-                    MinecraftForge.EVENT_BUS.register(shieldBashEventListener);
+                    // Arm on the server for a short window
+                    NetworkHandler.sendToServer(new ArmShieldBashPacket(60)); // 60 ticks = 3s
 
                 } else {
                     player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Shield Bash again."));
                     LOGGER.info("Cooldown period active. Shield Bash cannot be activated yet.");
                 }
+
             } else if (player.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
                 long timeLeft = THIEF_ABILITY_COOLDOWN - (currentTime - lastThiefAbilityTime);
                 if (timeLeft <= 0) {
@@ -319,8 +299,31 @@ public class KeyBindings {
                     player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Elemental Ranger ability again."));
                     LOGGER.info("Cooldown period active. Elemental Ranger ability cannot be activated yet.");
                 }
-            }
+            } else if (player.hasEffect(PotionEffectRegistry.GLADIATOR_STRENGTH.get())) {
+                long timeLeft = WHIRLWIND_COOLDOWN - (currentTime - lastWhirlwindTime);
 
+                if (timeLeft <= 0) {
+                    lastWhirlwindTime = currentTime;
+                    // Fire server packet to start the ability
+                    net.tacoman.stnmod.network.NetworkHandler
+                            .sendToServer(new net.tacoman.stnmod.network.StartWhirlwindPacket());
+
+// Start local spin visual (only you see this)
+                    net.tacoman.stnmod.client.WhirlwindClientSpin.startForMs(3000); // 3s
+
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Whirlwind Strike!"));
+
+                    scheduler.schedule(() -> {
+                        // optional: uncomment to tell player ability is ready again
+                        // player.sendSystemMessage(Component.literal("Whirlwind is ready again."));
+                    }, WHIRLWIND_COOLDOWN, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+                } else {
+                    player.sendSystemMessage(Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Whirlwind again."));
+                    LOGGER.info("Cooldown period active. Gladiator Whirlwind cannot be activated yet.");
+                }
+            }
 
 
         }
@@ -367,12 +370,39 @@ public class KeyBindings {
                 } else {
                     player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Elemental Ranger ability again."));
                     LOGGER.info("Cooldown period active. Elemental Ranger ability cannot be activated yet.");
+                }
+            } else if (player.hasEffect(PotionEffectRegistry.KNIGHT_STRENGTH.get())) {
+                long timeLeft = DASHING_STRIKE_COOLDOWN - (currentTime - lastDashingStrikeTime);
+
+                if (timeLeft <= 0) {
+                    lastDashingStrikeTime = currentTime;
+                    LOGGER.info("Dashing Strike activated by player (Knight): " + player.getName().getString());
+
+                    player.sendSystemMessage(Component.literal("⚔ Dashing Strike!"));
+
+                    // Tell the server to perform the dash + line attack
+                    NetworkHandler.sendToServer(new StartKnightDashPacket());
+
+                    // Optional: schedule a message when ready again
+                    scheduler.schedule(() -> {
+                        // player.sendSystemMessage(Component.literal("Dashing Strike is ready again."));
+                    }, DASHING_STRIKE_COOLDOWN, TimeUnit.MILLISECONDS);
+
+                } else {
+                    player.sendSystemMessage(Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Dashing Strike again."
+                    ));
+                    LOGGER.info("Cooldown period active. Dashing Strike cannot be activated yet.");
+                }
             }
         }
-        }
 
 
-        if (player != null && DEFENCE_STANCE_KEY.isDown()) {
+
+
+
+
+            if (player != null && DEFENCE_STANCE_KEY.isDown()) {
             long currentTime = System.currentTimeMillis();
 
             // Samurai Defence Stance

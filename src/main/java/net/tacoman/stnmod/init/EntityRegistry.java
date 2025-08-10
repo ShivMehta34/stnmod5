@@ -12,21 +12,39 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.tacoman.stnmod.entities.NinjaCloneEntity;
+import net.tacoman.stnmod.entities.ShurikenEntity;
+
 import net.tacoman.stnmod.stnmod;
 
 @Mod.EventBusSubscriber(modid = stnmod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class EntityRegistry {
+
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, stnmod.MODID);
+
+    public static final DeferredRegister<EntityType<?>> ENTITIES =
+            DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, stnmod.MODID);
 
     public static final RegistryObject<EntityType<NinjaCloneEntity>> NINJA_CLONE = ENTITY_TYPES.register("ninja_clone",
             () -> EntityType.Builder.of(NinjaCloneEntity::new, MobCategory.MISC)
                     .sized(0.6F, 1.8F)
                     .build(new ResourceLocation(stnmod.MODID, "ninja_clone").toString()));
 
+    // Register your shuriken
+    public static final RegistryObject<EntityType<ShurikenEntity>> SHURIKEN =
+            ENTITIES.register("shuriken", () ->
+                    EntityType.Builder.<ShurikenEntity>of(ShurikenEntity::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f) // hitbox size
+                            .build("shuriken")
+            );
+
+
+
+
 
     public static void register(IEventBus eventBus) {
         ENTITY_TYPES.register(eventBus);
     }
+
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {

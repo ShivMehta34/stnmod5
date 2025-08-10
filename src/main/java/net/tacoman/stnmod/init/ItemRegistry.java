@@ -13,6 +13,7 @@ import net.tacoman.stnmod.materials.ModArmorMaterials;
 import net.tacoman.stnmod.stnmod;
 
 public class ItemRegistry {
+
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, stnmod.MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, stnmod.MODID);
 
@@ -170,10 +171,14 @@ public class ItemRegistry {
             () -> new ArmorItem(ModArmorMaterials.REINFORCED_LEATHER, ArmorItem.Type.BOOTS, new Item.Properties()));
 
 
-
-
-
-
+    // --- Shuriken (Ninja-only item class lives in net.tacoman.stnmod.items) ---
+    public static final RegistryObject<Item> SHURIKEN = ITEMS.register("shuriken",
+            () -> new net.tacoman.stnmod.items.ShurikenItem(
+                    new Item.Properties()
+                            .stacksTo(64)
+                            .rarity(Rarity.UNCOMMON)
+            )
+    );
 
     public static void register(IEventBus eventBus) {
         BLOCKS.register(eventBus);

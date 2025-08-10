@@ -73,6 +73,7 @@ public class stnmod {
         MinecraftForge.EVENT_BUS.register(new ReflectDamageHandler());
 
 
+
         NetworkHandler.register();
 
         MinecraftForge.EVENT_BUS.register(PlayerRespawnHandler.class);
