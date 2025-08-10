@@ -1,0 +1,6 @@
+{
+    "parent": "stnmod:item/custom_crossbow",
+    "textures": {
+        "layer0": "stnmod:item/custom_crossbow_pulling_2"
+    }
+}

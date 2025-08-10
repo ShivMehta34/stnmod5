@@ -3,6 +3,7 @@ package net.tacoman.stnmod.potions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -17,6 +18,11 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -28,12 +34,16 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.tacoman.stnmod.handlers.ServerEventHandler;
+import net.tacoman.stnmod.items.CustomCrossbowItem;
 import net.tacoman.stnmod.stnmod;
 import net.tacoman.stnmod.init.PotionEffectRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = stnmod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -45,10 +55,14 @@ public class CustomPotionEffect extends MobEffect {
     private static final UUID SNEAK_SPEED_BOOST_UUID = UUID.fromString("c32e9d6a-0ea0-4d55-918d-f13f74fbf9d4");
     private static final AttributeModifier RANGER_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Ranger sneak speed boost", 0.06, AttributeModifier.Operation.ADDITION);
     private static final AttributeModifier SNIPER_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Sniper sneak speed boost", 0.06, AttributeModifier.Operation.ADDITION);
+    private static final AttributeModifier MARKSMAN_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Sniper sneak speed boost", 0.01, AttributeModifier.Operation.ADDITION);
     private static final AttributeModifier THIEF_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Thief sneak speed boost", 0.15, AttributeModifier.Operation.ADDITION);
     private static final AttributeModifier NINJA_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Ninja sneak speed boost", 0.1, AttributeModifier.Operation.ADDITION);
     private static final AttributeModifier ASSASSIN_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Assassin sneak speed boost", 0.25, AttributeModifier.Operation.ADDITION);
     private static final AttributeModifier ELEMENTAL_RANGER_SNEAK_SPEED_MODIFIER = new AttributeModifier(SNEAK_SPEED_BOOST_UUID, "Elemental Ranger sneak speed boost", 0.12, AttributeModifier.Operation.ADDITION);
+
+    private static final UUID MARKSMAN_SPEED_MODIFIER_UUID = UUID.fromString("e3f6aef1-992c-467f-a8df-7a1a1e34e3f1");
+
 
 
     private static final UUID GLADIATOR_ATTACK_DAMAGE_UUID = UUID.fromString("91AEAA56-376B-4498-935B-2F7F68070635");
@@ -68,18 +82,20 @@ public class CustomPotionEffect extends MobEffect {
                 double originalSpeed = originalVelocity.length();
 
                 if (shooter.hasEffect(PotionEffectRegistry.ELEMENTAL_RANGER_STRENGTH.get())) {
-                    arrow.setBaseDamage(arrow.getBaseDamage() * 1.2); // Double the base damage for Ranger
-                    Vec3 newVelocity = originalVelocity.scale(6.0); // 50% speed increase for Ranger
+                    arrow.setBaseDamage(arrow.getBaseDamage() * 1.2); // Adjust base damage for Elemental Ranger
+                    Vec3 newVelocity = originalVelocity.scale(6.0); // Adjust speed for Elemental Ranger
                     arrow.setDeltaMovement(newVelocity);
-                }else if (shooter.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
-                    arrow.setBaseDamage(arrow.getBaseDamage() * 2.25); // Double the base damage for Ranger
-                    Vec3 newVelocity = originalVelocity.scale(2.5); // 50% speed increase for Ranger
+                } else if (shooter.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
+                    arrow.setBaseDamage(arrow.getBaseDamage() * 2.25); // Adjust base damage for Ranger
+                    Vec3 newVelocity = originalVelocity.scale(2.5); // Adjust speed for Ranger
                     arrow.setDeltaMovement(newVelocity);
+
                 } else if (shooter.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())) {
-                    arrow.setBaseDamage(arrow.getBaseDamage() * 0.44); // Increased damage for Sniper
-                    Vec3 newVelocity = originalVelocity.scale(6.0); // 5x speed for Sniper
+                    arrow.setBaseDamage(arrow.getBaseDamage() * 0.44); // Adjust base damage for Sniper
+                    Vec3 newVelocity = originalVelocity.scale(6.0); // Adjust speed for Sniper
                     arrow.setDeltaMovement(newVelocity);
                 }
+
             }
         }
     }
@@ -88,16 +104,18 @@ public class CustomPotionEffect extends MobEffect {
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
 
-        if (player.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
-            handleSneakSpeed(player, RANGER_SNEAK_SPEED_MODIFIER);
+        if (player.hasEffect(PotionEffectRegistry.ELEMENTAL_RANGER_STRENGTH.get())) {
+            handleSneakSpeed(player, ELEMENTAL_RANGER_SNEAK_SPEED_MODIFIER);
+        } else if (player.hasEffect(PotionEffectRegistry.MARKSMAN_STRENGTH.get())) {
+            handleSneakSpeed(player, MARKSMAN_SNEAK_SPEED_MODIFIER);
         } else if (player.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())) {
             handleSneakSpeed(player, SNIPER_SNEAK_SPEED_MODIFIER);
-        } else if (player.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
-            handleSneakSpeed(player, THIEF_SNEAK_SPEED_MODIFIER);
-        } else if (player.hasEffect(PotionEffectRegistry.ELEMENTAL_RANGER_STRENGTH.get())) {
-            handleSneakSpeed(player, ELEMENTAL_RANGER_SNEAK_SPEED_MODIFIER);
         } else if (player.hasEffect(PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
             handleSneakSpeed(player, ASSASSIN_SNEAK_SPEED_MODIFIER);
+        } else if (player.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
+            handleSneakSpeed(player, RANGER_SNEAK_SPEED_MODIFIER);
+        } else if (player.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
+            handleSneakSpeed(player, THIEF_SNEAK_SPEED_MODIFIER);
             if (player.isCrouching()) {
                 player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 2, 0, false, false));
                 player.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 2, 2, false, false)); // Triple digging speed
@@ -117,6 +135,7 @@ public class CustomPotionEffect extends MobEffect {
             removeSneakSpeedModifier(player, THIEF_SNEAK_SPEED_MODIFIER);
             removeSneakSpeedModifier(player, NINJA_SNEAK_SPEED_MODIFIER);
             removeSneakSpeedModifier(player, ASSASSIN_SNEAK_SPEED_MODIFIER);
+            removeSneakSpeedModifier(player, MARKSMAN_SNEAK_SPEED_MODIFIER);
         }
 
         handleAttackDamage(player);
