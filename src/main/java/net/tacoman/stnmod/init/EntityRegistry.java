@@ -33,8 +33,10 @@ public class EntityRegistry {
     public static final RegistryObject<EntityType<ShurikenEntity>> SHURIKEN =
             ENTITIES.register("shuriken", () ->
                     EntityType.Builder.<ShurikenEntity>of(ShurikenEntity::new, MobCategory.MISC)
-                            .sized(0.5f, 0.5f) // hitbox size
-                            .build("shuriken")
+                            .sized(0.25f, 0.25f)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(stnmod.MODID + ":shuriken") // OK to use namespaced or just "shuriken"
             );
 
 

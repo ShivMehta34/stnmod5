@@ -11,6 +11,8 @@ import net.tacoman.stnmod.blocks.UpgradeTableBlock;
 import net.tacoman.stnmod.items.*;
 import net.tacoman.stnmod.materials.ModArmorMaterials;
 import net.tacoman.stnmod.stnmod;
+import java.util.Properties;
+import net.minecraft.world.item.Item;
 
 public class ItemRegistry {
 
@@ -102,6 +104,9 @@ public class ItemRegistry {
     public static final RegistryObject<Item> GIANT_COOKIE = ITEMS.register("giant_cookie",
             () -> new Item(new Item.Properties()
                     .food(ModFoods.GIANT_COOKIE_FOOD))); // Reference to the food properties
+
+    public static final RegistryObject<Item> CUSTOM_CROSSBOW = ITEMS.register("custom_crossbow",
+            () -> new CustomCrossbowItem(new Item.Properties().stacksTo(1)));
 
 
 

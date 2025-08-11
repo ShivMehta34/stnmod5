@@ -7,7 +7,7 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import net.tacoman.stnmod.utils.PlayerDataUtils;
-
+import net.tacoman.stnmod.init.PotionEffectRegistry;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -24,7 +24,7 @@ public class ArrowRainPacket {
         contextSupplier.get().enqueueWork(() -> {
             ServerPlayer player = contextSupplier.get().getSender();
             if (player != null) {
-                if (PlayerDataUtils.hasPlayerClass(player) && "ranger_class".equals(PlayerDataUtils.getPlayerClass(player))) {
+                if (player.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
                     ServerLevel world = player.serverLevel(); // Correct method to get the server level
                     Vec3 position = player.position();
                     Random random = new Random();

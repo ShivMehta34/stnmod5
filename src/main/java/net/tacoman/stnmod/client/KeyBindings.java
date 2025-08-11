@@ -34,10 +34,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.tacoman.stnmod.handlers.ServerEventHandler;
+import net.tacoman.stnmod.items.CustomCrossbowItem;
 
 
 
@@ -55,6 +58,9 @@ public class KeyBindings {
     public static final KeyMapping DEFENCE_STANCE_KEY = new KeyMapping("key.stnmod.defence_stance", GLFW.GLFW_KEY_X, "key.categories.gameplay");
     public static final KeyMapping LEG_SHOT_KEY = new KeyMapping("key.stnmod.leg_shot", GLFW.GLFW_KEY_V, "key.categories.gameplay");
     public static final KeyMapping ARROW_RAIN_KEY = new KeyMapping("key.stnmod.arrow_rain", GLFW.GLFW_KEY_B, "key.categories.gameplay");
+    public static final KeyMapping Z_KEY = new KeyMapping("key.stnmod.Z", GLFW.GLFW_KEY_Z, "key.categories.gameplay");
+    public static final KeyMapping R_KEY = new KeyMapping("key.stnmod.R", GLFW.GLFW_KEY_R, "key.categories.gameplay");
+    public static final KeyMapping G_KEY = new KeyMapping("key.stnmod.G", GLFW.GLFW_KEY_G, "key.categories.gameplay");
 
     private static long lastSummonTime = 0;
     private static long lastBattleStanceTime = 0;
@@ -70,6 +76,7 @@ public class KeyBindings {
     private static long lastArrowTime = 0;
     private static long lastWhirlwindTime = 0;
     private static long lastDashingStrikeTime = 0;
+    private static long lastGrappleTime = 0;
 
 
     private static Entity targetedEntity; // Store the entity targeted by Armor Breaker
@@ -88,6 +95,7 @@ public class KeyBindings {
     private static final long ARROW_COOLDOWN = 60000; // 1 minute cooldown
     private static final long WHIRLWIND_COOLDOWN = 12000; // 12s
     private static final long DASHING_STRIKE_COOLDOWN = 8000;
+    private static final long GRAPPLE_COOLDOWN = 60000; // 1 minute cooldown
 
 
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -328,6 +336,59 @@ public class KeyBindings {
 
         }
 
+        if (player != null && G_KEY.isDown()) {
+            long currentTime = System.currentTimeMillis();
+
+            if (player.hasEffect(PotionEffectRegistry.MARKSMAN_STRENGTH.get())) {
+                long timeLeft = GRAPPLE_COOLDOWN - (currentTime - lastGrappleTime);
+                if (timeLeft <= 0) {
+                    lastGrappleTime = currentTime;
+                    LOGGER.info("Special ability key pressed by player : " + player.getName().getString());
+                    try {
+                        NetworkHandler.sendToServer(new GrapplePacket());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        player.sendSystemMessage(Component.literal("Error: " + e.getMessage()));
+                        LOGGER.severe("Error while trying to summon clones: " + e.getMessage());
+                    }
+                } else {
+                    player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before grappling again."));
+                    LOGGER.info("Cooldown period active. Clones cannot grapple yet.");
+                }
+            }
+        }
+
+
+
+
+        if (player != null && Z_KEY.isDown()) {
+            long currentTime = System.currentTimeMillis(); // Declare currentTime here, outside the if-else chain
+
+            if (player.hasEffect(PotionEffectRegistry.ELEMENTAL_RANGER_STRENGTH.get())) {
+                long timeLeft = ARROW_COOLDOWN - (currentTime - lastArrowTime);
+                if (timeLeft <= 0) {
+                    lastArrowTime = currentTime;
+                    LOGGER.info("Fire Shot Activated " + player.getName().getString());
+                    player.sendSystemMessage(Component.literal("Fire Shot activated!"));
+
+                    // Send packet to the server to prepare for the lightning arrow
+                    NetworkHandler.sendToServer(new TriggerFireArrowPacket());
+
+                    // Schedule a cooldown message to indicate when the ability is ready again
+                    scheduler.schedule(() -> {
+                        //      player.sendSystemMessage(Component.literal("Lightning arrow time up."));
+                    }, ARROW_COOLDOWN, TimeUnit.MILLISECONDS);
+                } else {
+                    player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Elemental Ranger ability again."));
+                    LOGGER.info("Cooldown period active. Elemental Ranger ability cannot be activated yet.");
+                }
+            }
+        }
+
+
+
+
+
 
 
         // Leg Shot
@@ -488,7 +549,33 @@ public class KeyBindings {
                     player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Defensive Aura again."));
                     LOGGER.info("Cooldown period active. Defensive Aura cannot be activated yet.");
                 }
+            }else if (player.hasEffect(PotionEffectRegistry.ELEMENTAL_RANGER_STRENGTH.get())) {
+                long timeLeft = ARROW_COOLDOWN - (currentTime - lastArrowTime);
+
+                if (timeLeft <= 0) {
+                    lastArrowTime = currentTime;
+                    LOGGER.info("Ice ability activated by player: " + player.getName().getString());
+
+                    player.sendSystemMessage(Component.literal("Ice Shot activated!"));
+
+                    // Send packet to the server to prepare for the lightning arrow
+                    NetworkHandler.sendToServer(new TriggerIceArrowPacket());
+
+                    // Schedule a cooldown message to indicate when the ability is ready again
+                    scheduler.schedule(() -> {
+                        //      player.sendSystemMessage(Component.literal("Lightning arrow time up."));
+                    }, ARROW_COOLDOWN, TimeUnit.MILLISECONDS);
+                } else {
+                    player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Elemental Ranger ability again."));
+                    LOGGER.info("Cooldown period active. Elemental Ranger ability cannot be activated yet.");
+                }
             }
+        }
+
+
+        // Marksman Mode Toggle
+        if (player != null && R_KEY.isDown()) {
+            NetworkHandler.sendToServer(new ToggleMarksmanModePacket());
         }
 
         // Arrow Rain

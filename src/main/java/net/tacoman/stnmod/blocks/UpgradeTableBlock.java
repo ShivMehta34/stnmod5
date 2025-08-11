@@ -42,6 +42,7 @@
         private static final UUID BERSERKER_SPEED_MODIFIER_UUID = UUID.fromString("d9b6bc9e-717d-4c5a-9c58-dafc70a6c8c5");
         private static final UUID ASSASSIN_SPEED_MODIFIER_UUID = UUID.fromString("d9b6bc9e-717d-4c5a-9c58-dafc70a6c8c5");
         private static final UUID SHOGUN_SPEED_MODIFIER_UUID = UUID.fromString("a4f7e3d1-bc3d-4f89-a909-23c4d6f3d6c9");
+        private static final UUID MARKSMAN_SPEED_MODIFIER_UUID = UUID.fromString("d4e3f6b7-a8c2-4911-a123-56e9d4a7f9b3");
 
 
 
@@ -117,7 +118,15 @@
                                 } else {
                                     serverPlayer.sendSystemMessage(Component.literal("You are a Ranger. You can only upgrade to Elemental Ranger."));
                                 }
+                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())) {
+                                if (itemInHand.getItem() == ItemRegistry.MARKSMAN_CLASS.get()) {
+                                    setClassMarksman(serverPlayer);
+                                } else {
+                                    serverPlayer.sendSystemMessage(Component.literal("You are a Sniper. You can only upgrade to Marksman."));
+                                }
                             }
+
+
                             // Add similar checks for other tier 2 classes here...
 
                         } else {
@@ -324,6 +333,35 @@
 
             ClassChangeEffectHandler.triggerFadeEffect(); // Trigger the class change effect
             PlayerDataUtils.setPlayerClass(player, "Elemental_Ranger");
+        }
+
+        private void setClassMarksman(ServerPlayer player) {
+            player.getAbilities().invulnerable = false;
+            player.getAbilities().mayfly = false;
+
+            // Add extra hearts
+            player.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0); // 15 hearts
+
+            // Increase walking speed
+            AttributeInstance movementSpeed = player.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (movementSpeed != null) {
+                movementSpeed.removeModifier(SPEED_MODIFIER_UUID);
+                movementSpeed.addPermanentModifier(new AttributeModifier(SPEED_MODIFIER_UUID, "Marksman speed boost", .01, AttributeModifier.Operation.ADDITION));
+            }
+
+            // Apply bow damage multiplier
+            player.addEffect(new MobEffectInstance(PotionEffectRegistry.MARKSMAN_STRENGTH.get(), Integer.MAX_VALUE, 0, false, false));
+
+            player.sendSystemMessage(Component.literal("You have chosen the Marksman class!"));
+            player.giveExperienceLevels(-40);
+            removeItems(player, Items.LAPIS_LAZULI, 40);
+            removeItems(player, Items.DIAMOND, 40);
+
+            // Give longbow blueprint
+            giveLongbowBlueprint(player);
+
+            ClassChangeEffectHandler.triggerFadeEffect(); // Trigger the class change effect
+            PlayerDataUtils.setPlayerClass(player, "Marksman");
         }
 
 

@@ -30,6 +30,10 @@ public class NetworkHandler {
         CHANNEL.registerMessage(id++, WhirlwindStartedPacket.class, (msg, buf) -> msg.toBytes(buf), WhirlwindStartedPacket::new, (msg, ctx) -> msg.handle(ctx));
         CHANNEL.registerMessage(id++, StartKnightDashPacket.class, StartKnightDashPacket::toBytes, StartKnightDashPacket::new, (msg, ctx) -> msg.handle(ctx));
         CHANNEL.registerMessage(id++, ArmShieldBashPacket.class, ArmShieldBashPacket::toBytes, ArmShieldBashPacket::new, (msg, ctx) -> msg.handle(ctx));
+        CHANNEL.registerMessage(id++, TriggerFireArrowPacket.class, TriggerFireArrowPacket::encode, TriggerFireArrowPacket::decode, TriggerFireArrowPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, TriggerIceArrowPacket.class, TriggerIceArrowPacket::encode, TriggerIceArrowPacket::decode, TriggerIceArrowPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, ToggleMarksmanModePacket.class, ToggleMarksmanModePacket::encode, ToggleMarksmanModePacket::decode, ToggleMarksmanModePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, GrapplePacket.class, GrapplePacket::encode, GrapplePacket::decode, GrapplePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
 
     }
 
