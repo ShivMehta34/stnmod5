@@ -163,39 +163,56 @@ public class CustomPotionEffect extends MobEffect {
     private static void handleAttackDamage(Player player) {
         AttributeInstance attackDamage = player.getAttribute(Attributes.ATTACK_DAMAGE);
 
-        if (player.hasEffect(PotionEffectRegistry.GLADIATOR_STRENGTH.get())) {
-            if (attackDamage != null && attackDamage.getBaseValue() != 8.0) {
-                attackDamage.setBaseValue(8.0); // Set the attack damage for Gladiator
-            }
-        } else if (player.hasEffect(PotionEffectRegistry.BERSERKER_STRENGTH.get())) {
+        // ---- TIER 2 CLASSES FIRST ----
+        if (player.hasEffect(PotionEffectRegistry.BERSERKER_STRENGTH.get())) {
             if (attackDamage != null && attackDamage.getBaseValue() != 10.0) {
-                attackDamage.setBaseValue(10.0); // Set the attack damage for Berserker
+                attackDamage.setBaseValue(10.0); // Berserker (T2)
             }
         } else if (player.hasEffect(PotionEffectRegistry.PALADIN_STRENGTH.get())) {
             if (attackDamage != null && attackDamage.getBaseValue() != 4.0) {
-                attackDamage.setBaseValue(4.0); // Set the attack damage for Paladin
-            }
-        } else if (player.hasEffect(PotionEffectRegistry.KNIGHT_STRENGTH.get())) {
-            if (attackDamage != null && attackDamage.getBaseValue() != 2.0) {
-                attackDamage.setBaseValue(2.0); // Set the attack damage for Knight
+                attackDamage.setBaseValue(4.0); // Paladin (T2)
             }
         } else if (player.hasEffect(PotionEffectRegistry.SHOGUN_STRENGTH.get())) {
             if (attackDamage != null && attackDamage.getBaseValue() != 10.0) {
-                attackDamage.setBaseValue(10.0); // Set the attack damage for Shogun
-            }
-        } else if (player.hasEffect(PotionEffectRegistry.SAMURAI_STRENGTH.get())) {
-            if (attackDamage != null && attackDamage.getBaseValue() != 4.0) {
-                attackDamage.setBaseValue(4.0); // Set the attack damage for Samurai
+                attackDamage.setBaseValue(10.0); // Shogun (T2)
             }
         } else if (player.hasEffect(PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
             if (attackDamage != null && attackDamage.getBaseValue() != 4.0) {
-                attackDamage.setBaseValue(4.0); // Set the attack damage for Assassin
+                attackDamage.setBaseValue(4.0); // Assassin (T2)
             }
-        } else {
-            if (attackDamage != null) {
-                // Reset the attack damage if it was set by any of the strength effects
-                if (attackDamage.getBaseValue() == 8.0 || attackDamage.getBaseValue() == 2.0 || attackDamage.getBaseValue() == 4.0 || attackDamage.getBaseValue() == 10.0) {
-                    attackDamage.setBaseValue(1.0); // Default base value, adjust if necessary
+        } else if (player.hasEffect(PotionEffectRegistry.NIGHTWING_STRENGTH.get())) {
+            if (attackDamage != null && attackDamage.getBaseValue() != 4.0) {
+                attackDamage.setBaseValue(6.0); // Nightwing (T2)
+            }
+
+// ---- TIER 1 CLASSES AFTER ----
+        } else if (player.hasEffect(PotionEffectRegistry.GLADIATOR_STRENGTH.get())) {
+            if (attackDamage != null && attackDamage.getBaseValue() != 8.0) {
+                attackDamage.setBaseValue(8.0); // Gladiator (T1)
+            }
+        } else if (player.hasEffect(PotionEffectRegistry.SAMURAI_STRENGTH.get())) {
+            if (attackDamage != null && attackDamage.getBaseValue() != 4.0) {
+                attackDamage.setBaseValue(4.0); // Samurai (T1)
+            }
+        } else if (player.hasEffect(PotionEffectRegistry.KNIGHT_STRENGTH.get())) {
+            if (attackDamage != null && attackDamage.getBaseValue() != 2.0) {
+                attackDamage.setBaseValue(2.0); // Knight (T1)
+            }
+        } else if (player.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
+            if (attackDamage != null && attackDamage.getBaseValue() != 3.0) {
+                attackDamage.setBaseValue(2.0); // Thief (T1)
+
+            }
+        } else if (player.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
+            if (attackDamage != null && attackDamage.getBaseValue() != 3.0) {
+                attackDamage.setBaseValue(3.0); // Thief (T1)
+
+            } else {
+                if (attackDamage != null) {
+                    // Reset the attack damage if it was set by any of the strength effects
+                    if (attackDamage.getBaseValue() == 8.0 || attackDamage.getBaseValue() == 2.0 || attackDamage.getBaseValue() == 4.0 || attackDamage.getBaseValue() == 10.0) {
+                        attackDamage.setBaseValue(1.0); // Default base value, adjust if necessary
+                    }
                 }
             }
         }

@@ -43,6 +43,8 @@ public class PotionEffectRegistry {
             () -> new NinjaEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF));
     public static final RegistryObject<MobEffect> MARKSMAN_STRENGTH = MOB_EFFECTS.register("marksman_strength",
             () -> new NinjaEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF));
+    public static final RegistryObject<MobEffect> NIGHTWING_STRENGTH = MOB_EFFECTS.register("nightwing_strength",
+            () -> new NinjaEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF));
     public static final RegistryObject<MobEffect> SAMURAI_BATTLE_STRENGTH = MOB_EFFECTS.register("samurai_battle_strength",
             () -> new NinjaEffect(MobEffectCategory.BENEFICIAL, 0xFFFFFF));
     public static final RegistryObject<MobEffect> BLEED = MOB_EFFECTS.register("bleed",

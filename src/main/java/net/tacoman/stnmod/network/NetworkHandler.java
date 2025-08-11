@@ -35,8 +35,9 @@ public class NetworkHandler {
         CHANNEL.registerMessage(id++, ToggleMarksmanModePacket.class, ToggleMarksmanModePacket::encode, ToggleMarksmanModePacket::decode, ToggleMarksmanModePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, GrapplePacket.class, GrapplePacket::encode, GrapplePacket::decode, GrapplePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, ArmBackstabPacket.class, ArmBackstabPacket::encode, ArmBackstabPacket::decode, ArmBackstabPacket::handle);
-
-
+        CHANNEL.registerMessage(id++, ArmorBreakerC2SPacket.class, ArmorBreakerC2SPacket::encode, ArmorBreakerC2SPacket::decode, ArmorBreakerC2SPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, DoubleFangsC2SPacket.class, DoubleFangsC2SPacket::encode, DoubleFangsC2SPacket::decode, DoubleFangsC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, NightwingSmokeBombC2SPacket.class, NightwingSmokeBombC2SPacket::encode, NightwingSmokeBombC2SPacket::decode, NightwingSmokeBombC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
     }
 
     public static void sendToServer(Object packet) {

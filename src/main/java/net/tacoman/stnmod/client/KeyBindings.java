@@ -89,7 +89,7 @@ public class KeyBindings {
     private static final long KILL_SHOT_COOLDOWN = 300000; // 5 minutes cooldown
     private static final long SHIELD_BASH_COOLDOWN = 40000; // 40 seconds cooldown
     private static final long THIEF_ABILITY_COOLDOWN = 60000; // 1 minute cooldown
-    private static final long ARMOR_BREAKER_COOLDOWN = 30000; // 1 minute cooldown
+    private static final long ARMOR_BREAKER_COOLDOWN = 300000; // 1 minute cooldown
     private static final long DEFENSIVE_AURA_COOLDOWN = 120000; // 2 minutes cooldown
     private static final long REINFORCE_SHIELD_COOLDOWN = 12000; // 2 minutes cooldown
     private static final long ARROW_COOLDOWN = 60000; // 1 minute cooldown
@@ -419,6 +419,26 @@ public class KeyBindings {
                     ));
                     LOGGER.info("Cooldown period active. Dashing Strike cannot be activated yet.");
                 }
+
+            } else if (player.hasEffect(net.tacoman.stnmod.init.PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
+                // Try to acquire a target under crosshair (optional)
+                net.minecraft.world.entity.Entity tgt =
+                        net.tacoman.stnmod.client.CrosshairPick.livingUnderCrosshair(8.0D); // 8 blocks reach
+                int id = (tgt != null) ? tgt.getId() : -1;
+
+                // Send to server
+                net.tacoman.stnmod.network.NetworkHandler.CHANNEL.sendToServer(
+                        new net.tacoman.stnmod.network.DoubleFangsC2SPacket(id)
+                );
+
+                // Feedback
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Double Fangs! Leap and strike."));
+            } else if (player.hasEffect(net.tacoman.stnmod.init.PotionEffectRegistry.NIGHTWING_STRENGTH.get())) {
+                // Trigger Nightwing Smoke Bomb on server
+                net.tacoman.stnmod.network.NetworkHandler.CHANNEL.sendToServer(
+                        new net.tacoman.stnmod.network.NightwingSmokeBombC2SPacket()
+                );
+
             }
         }
 
@@ -476,15 +496,26 @@ public class KeyBindings {
                     lastArmorBreakerTime = currentTime;
                     LOGGER.info("Armor Breaker ability key pressed by player (Assassin): " + player.getName().getString());
 
-                    player.sendSystemMessage(Component.literal("Armor Breaker activated! Hit an enemy to start the ability."));
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Armor Breaker activated!"));
 
-                    // Register a new event listener for Armor Breaker
-                    MinecraftForge.EVENT_BUS.register(new ArmorBreakerEventListener(player));
+                    // find a target under crosshair within ~6 blocks
+                    net.minecraft.world.entity.Entity tgt =
+                            net.tacoman.stnmod.client.CrosshairPick.livingUnderCrosshair(6.0D);
 
-                    // Cooldown logic
-                    player.sendSystemMessage(Component.literal("Armor Breaker on cooldown for 60 seconds."));
+                    if (tgt == null) {
+                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Look at an enemy within 6 blocks and press again."));
+                    } else {
+                        // send C2S packet to run the ability server-side
+                        net.tacoman.stnmod.network.NetworkHandler.CHANNEL.sendToServer(
+                                new net.tacoman.stnmod.network.ArmorBreakerC2SPacket(tgt.getId())
+                        );
+                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Armor Breaker engaged on " + tgt.getName().getString()));
+                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Armor Breaker on cooldown for 60 seconds."));
+                    }
                 } else {
-                    player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Armor Breaker again."));
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Armor Breaker again."
+                    ));
                     LOGGER.info("Cooldown period active. Armor Breaker cannot be activated yet.");
                 }
             } else if (player.hasEffect(PotionEffectRegistry.PALADIN_STRENGTH.get())) {

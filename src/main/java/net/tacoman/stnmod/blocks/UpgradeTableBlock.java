@@ -43,6 +43,9 @@
         private static final UUID ASSASSIN_SPEED_MODIFIER_UUID = UUID.fromString("d9b6bc9e-717d-4c5a-9c58-dafc70a6c8c5");
         private static final UUID SHOGUN_SPEED_MODIFIER_UUID = UUID.fromString("a4f7e3d1-bc3d-4f89-a909-23c4d6f3d6c9");
         private static final UUID MARKSMAN_SPEED_MODIFIER_UUID = UUID.fromString("d4e3f6b7-a8c2-4911-a123-56e9d4a7f9b3");
+        private static final UUID NIGHTWING_SPEED_MODIFIER_UUID = UUID.fromString("8b9a1c2f-3d47-4f8c-b9e2-7ad4fcb2d4e7");
+
+
 
 
 
@@ -120,6 +123,12 @@
                                 }
                             } else if (serverPlayer.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())) {
                                 if (itemInHand.getItem() == ItemRegistry.MARKSMAN_CLASS.get()) {
+                                    setClassMarksman(serverPlayer);
+                                } else {
+                                    serverPlayer.sendSystemMessage(Component.literal("You are a Sniper. You can only upgrade to Marksman."));
+                                }
+                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
+                                if (itemInHand.getItem() == ItemRegistry.NIGHTWING_CLASS.get()) {
                                     setClassMarksman(serverPlayer);
                                 } else {
                                     serverPlayer.sendSystemMessage(Component.literal("You are a Sniper. You can only upgrade to Marksman."));
@@ -226,6 +235,32 @@
 
             ClassChangeEffectHandler.triggerFadeEffect(); // Trigger the class change effect
             PlayerDataUtils.setPlayerClass(player, "Assassin");
+        }
+
+        private void setClassNightwing(ServerPlayer player) {
+            player.getAbilities().invulnerable = false;
+            player.getAbilities().mayfly = false;
+
+            // Add extra hearts
+            player.getAttribute(Attributes.MAX_HEALTH).setBaseValue(44.0); // 20 hearts
+
+            // Increase walking speed
+            AttributeInstance movementSpeed = player.getAttribute(Attributes.MOVEMENT_SPEED);
+            if (movementSpeed != null) {
+                movementSpeed.removeModifier(NIGHTWING_SPEED_MODIFIER_UUID);
+                movementSpeed.addPermanentModifier(new AttributeModifier(NIGHTWING_SPEED_MODIFIER_UUID, "Nightwing speed boost", 0.050, AttributeModifier.Operation.ADDITION));
+            }
+
+            // Apply custom Assassin effect for increased damage
+            player.addEffect(new MobEffectInstance(PotionEffectRegistry.NIGHTWING_STRENGTH.get(), Integer.MAX_VALUE, 1, false, false));
+
+            player.sendSystemMessage(Component.literal("You have chosen the Nightwing class!"));
+            player.giveExperienceLevels(-40);
+            removeItems(player, Items.LAPIS_LAZULI, 40);
+            removeItems(player, Items.DIAMOND, 40);
+
+            ClassChangeEffectHandler.triggerFadeEffect(); // Trigger the class change effect
+            PlayerDataUtils.setPlayerClass(player, "Nightwing");
         }
 
         private void setClassPaladin(ServerPlayer player) {
@@ -345,8 +380,8 @@
             // Increase walking speed
             AttributeInstance movementSpeed = player.getAttribute(Attributes.MOVEMENT_SPEED);
             if (movementSpeed != null) {
-                movementSpeed.removeModifier(SPEED_MODIFIER_UUID);
-                movementSpeed.addPermanentModifier(new AttributeModifier(SPEED_MODIFIER_UUID, "Marksman speed boost", .01, AttributeModifier.Operation.ADDITION));
+                movementSpeed.removeModifier(MARKSMAN_SPEED_MODIFIER_UUID);
+                movementSpeed.addPermanentModifier(new AttributeModifier(MARKSMAN_SPEED_MODIFIER_UUID, "Marksman speed boost", .01, AttributeModifier.Operation.ADDITION));
             }
 
             // Apply bow damage multiplier
