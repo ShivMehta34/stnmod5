@@ -91,10 +91,10 @@ public class KeyBindings {
     private static final long THIEF_ABILITY_COOLDOWN = 60000; // 1 minute cooldown
     private static final long ARMOR_BREAKER_COOLDOWN = 30000; // 1 minute cooldown
     private static final long DEFENSIVE_AURA_COOLDOWN = 120000; // 2 minutes cooldown
-    private static final long REINFORCE_SHIELD_COOLDOWN = 120000; // 2 minutes cooldown
+    private static final long REINFORCE_SHIELD_COOLDOWN = 12000; // 2 minutes cooldown
     private static final long ARROW_COOLDOWN = 60000; // 1 minute cooldown
     private static final long WHIRLWIND_COOLDOWN = 12000; // 12s
-    private static final long DASHING_STRIKE_COOLDOWN = 8000;
+    private static final long DASHING_STRIKE_COOLDOWN = 20000;
     private static final long GRAPPLE_COOLDOWN = 60000; // 1 minute cooldown
 
 
@@ -238,53 +238,17 @@ public class KeyBindings {
                     lastThiefAbilityTime = currentTime;
                     LOGGER.info("Special ability key pressed by player (Thief): " + player.getName().getString());
 
-                    player.sendSystemMessage(Component.literal("Back-stab activated! Hit something with a dagger to use."));
+                    // Arm on the server: 3s window to backstab (handled server-side)
+                    net.tacoman.stnmod.network.NetworkHandler.sendToServer(new net.tacoman.stnmod.network.ArmBackstabPacket());
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "Back-stab armed! Hit a target with a dagger within 3 seconds."));
 
-                    // Register a listener for the next attack
-                    Object thiefAbilityEventListener = new Object() {
-                        @SubscribeEvent(priority = EventPriority.HIGHEST)
-                        // Set a high priority to ensure this triggers first
-                        public void onEntityHit(AttackEntityEvent event) {
-                            if (event.getEntity().equals(player)) {
-                                Entity target = event.getTarget();
-
-                                // Ensure the player is using a dagger and the target is a living entity
-                                if (player.getMainHandItem().getItem() instanceof DaggerItem && target instanceof LivingEntity) {
-                                    LivingEntity livingTarget = (LivingEntity) target;
-
-                                    // Determine base damage to apply
-                                    float baseDamage = 40.0F; // Default damage
-
-                                    // If the player has the ASSASSIN_STRENGTH effect, apply triple damage
-                                    if (player.hasEffect(PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
-                                        baseDamage *= 3.0F; // Triple the damage
-                                        player.sendSystemMessage(Component.literal("Assassin's back-stab! Tripled damage applied!"));
-                                    }
-
-                                    // Apply the damage
-                                    float healthBefore = livingTarget.getHealth();
-                                    livingTarget.hurt(player.damageSources().playerAttack(player), baseDamage);
-                                    float damageDealt = healthBefore - livingTarget.getHealth();
-
-                                    // Apply bleed effect
-                                    livingTarget.addEffect(new MobEffectInstance(PotionEffectRegistry.BLEED.get(), 100, 1)); // Apply "bleed" effect
-
-                                    player.sendSystemMessage(Component.literal("You dealt " + damageDealt + " damage and caused the target to bleed!"));
-                                } else {
-                                    player.sendSystemMessage(Component.literal("You attacked, but it wasn't with a dagger, so no bleed effect was applied."));
-                                }
-
-                                // Unregister the listener after a successful hit
-                                MinecraftForge.EVENT_BUS.unregister(this);
-                            }
-                        }
-                    };
-
-                    // Register the event listener
-                    MinecraftForge.EVENT_BUS.register(thiefAbilityEventListener);
+                    // Optional: schedule nothing (just mirroring your other abilities)
+                    scheduler.schedule(() -> { /* noop */ }, THIEF_ABILITY_COOLDOWN, java.util.concurrent.TimeUnit.MILLISECONDS);
 
                 } else {
-                    player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using your special ability again."));
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using your special ability again."));
                     LOGGER.info("Cooldown period active. Thief's special ability cannot be activated yet.");
                 }
             } else if (player.hasEffect(PotionEffectRegistry.ELEMENTAL_RANGER_STRENGTH.get())) {

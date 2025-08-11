@@ -34,6 +34,8 @@ public class NetworkHandler {
         CHANNEL.registerMessage(id++, TriggerIceArrowPacket.class, TriggerIceArrowPacket::encode, TriggerIceArrowPacket::decode, TriggerIceArrowPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, ToggleMarksmanModePacket.class, ToggleMarksmanModePacket::encode, ToggleMarksmanModePacket::decode, ToggleMarksmanModePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, GrapplePacket.class, GrapplePacket::encode, GrapplePacket::decode, GrapplePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, ArmBackstabPacket.class, ArmBackstabPacket::encode, ArmBackstabPacket::decode, ArmBackstabPacket::handle);
+
 
     }
 

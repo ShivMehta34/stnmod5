@@ -214,59 +214,86 @@ public class CustomPotionEffect extends MobEffect {
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            if (player.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
-                if (Math.random() < 0.33) { // 33% chance
-                    event.setCanceled(true);
+        if (!(event.getEntity() instanceof Player player)) return;
+        // run only on server to avoid double-effects
+        if (player.level().isClientSide) return;
 
-                    // Teleport the Ninja
-                    Vec3 playerPos = player.position();
-                    double xOffset = (Math.random() * 20) - 10; // 4 times farther (5 * 4)
-                    double zOffset = (Math.random() * 20) - 10; // 4 times farther (5 * 4)
-                    int targetX = (int) (playerPos.x + xOffset);
-                    int targetY = (int) playerPos.y;
-                    int targetZ = (int) (playerPos.z + zOffset);
+        // --- NINJA: 33% chance to negate and short-teleport ---
+        if (player.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
+            if (Math.random() < 0.33) {
+                event.setCanceled(true);
+                Vec3 pos = player.position();
 
-                    BlockPos targetPos = new BlockPos(targetX, targetY, targetZ);
+                // half distance: -5..+5
+                double xOffset = (Math.random() * 10) - 5;
+                double zOffset = (Math.random() * 10) - 5;
 
-                    // Ensure the target position is a safe location
-                    while (!isSafeTeleportPosition(player.level(), targetPos)) {
-                        targetY += 1; // Move up until a safe spot is found
-                        if (targetY > player.level().getMaxBuildHeight()) {
-                            // If we reach max build height, reset to player's initial position
-                            targetY = (int) playerPos.y;
-                            targetX = (int) playerPos.x;
-                            targetZ = (int) playerPos.z;
-                            targetPos = new BlockPos(targetX, targetY, targetZ);
-                            break;
-                        }
-                        targetPos = new BlockPos(targetX, targetY, targetZ);
+                int tx = (int) (pos.x + xOffset);
+                int ty = (int) pos.y;
+                int tz = (int) (pos.z + zOffset);
+                BlockPos target = new BlockPos(tx, ty, tz);
+
+                // climb until safe (simple check)
+                while (!isSafeTeleportPosition(player.level(), target)) {
+                    ty += 1;
+                    if (ty > player.level().getMaxBuildHeight()) {
+                        tx = (int) pos.x;
+                        ty = (int) pos.y;
+                        tz = (int) pos.z;
+                        target = new BlockPos(tx, ty, tz);
+                        break;
                     }
-
-                    player.teleportTo(targetX + 0.5, targetY, targetZ + 0.5);
-                }
-            } else if (player.hasEffect(PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
-                boolean willNegateDamage = Math.random() < 0.85; // 85% chance to negate damage
-
-                if (willNegateDamage) {
-                    // Cancel the event to prevent any damage, knockback, or hit effects
-                    event.setCanceled(true);
-
-                    // Optionally, play a sound or particle effect to indicate the invincibility
-                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                            SoundEvents.BAMBOO_HIT, SoundSource.PLAYERS, 1.0F, 1.0F);
-                } else {
-                    // 15% of the time, the assassin can take full damage
-                    player.setInvulnerable(false);
+                    target = new BlockPos(tx, ty, tz);
                 }
 
-                // Ensure the player can still be attacked by mobs (visual feedback)
-                if (event.getSource().getEntity() instanceof Mob) {
-                    // Normally you would mark the player as hurt, but in this case, we don't want any visual effects
-                    player.hurtMarked = false; // Ensure no red flash occurs
-                }
+                player.teleportTo(tx + 0.5, ty, tz + 0.5);
             }
+            return; // handled Ninja path (regardless of proc)
+        }
 
+        // --- THIEF: 60% chance to negate and short-teleport ---
+        if (player.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
+            if (Math.random() < 0.60) { // 60% chance
+                event.setCanceled(true);
+                Vec3 pos = player.position();
+
+                double xOffset = (Math.random() * 5) - 2.5;
+                double zOffset = (Math.random() * 5) - 2.5;
+
+                int tx = (int) (pos.x + xOffset);
+                int ty = (int) pos.y;
+                int tz = (int) (pos.z + zOffset);
+                BlockPos target = new BlockPos(tx, ty, tz);
+
+                while (!isSafeTeleportPosition(player.level(), target)) {
+                    ty += 1;
+                    if (ty > player.level().getMaxBuildHeight()) {
+                        tx = (int) pos.x;
+                        ty = (int) pos.y;
+                        tz = (int) pos.z;
+                        target = new BlockPos(tx, ty, tz);
+                        break;
+                    }
+                    target = new BlockPos(tx, ty, tz);
+                }
+
+                player.teleportTo(tx + 0.5, ty, tz + 0.5);
+            }
+            return; // handled Thief path
+        }
+
+        // --- ASSASSIN: 85% negate (no teleport) ---
+        if (player.hasEffect(PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
+            boolean negate = Math.random() < 0.85; // 85% chance
+            if (negate) {
+                event.setCanceled(true);
+                player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        SoundEvents.BAMBOO_HIT, SoundSource.PLAYERS, 1.0F, 1.0F);
+            }
+            // avoid red flash if source is a mob
+            if (event.getSource().getEntity() instanceof Mob) {
+                player.hurtMarked = false;
+            }
         }
     }
 
