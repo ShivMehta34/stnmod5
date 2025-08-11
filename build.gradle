@@ -4,8 +4,6 @@ buildscript {
     }
 }
 
-
-
 plugins {
     id 'eclipse'
     id 'idea'
@@ -19,15 +17,12 @@ plugins {
 version = mod_version
 group = mod_group_id
 
-// Define versions directly within the dependencies block
 def minecraft_version = "1.20.1"
-def forge_version = "47.3.5"
-def geckolib_version = "4.4.6"  // Set GeckoLib version here
+def forge_version     = "47.3.5"
 
 base {
     archivesName = mod_id
 }
-
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -35,7 +30,6 @@ println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty '
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
-
     copyIdeResources = true
 
     runs {
@@ -75,31 +69,26 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     mavenCentral()
-
-    maven {
-        name = 'GeckoLib'
-        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroupByRegex("software\\.bernie.*")
-            includeGroup("com.eliotlash.mclib")
-        }
-    }
 }
-
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:${geckolib_version}")
-    implementation("com.eliotlash.mclib:mclib:20")
+    // GeckoLib and other animation libs removed on purpose
 }
 
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
-            mod_authors: mod_authors, mod_description: mod_description,
+            minecraft_version        : minecraft_version,
+            minecraft_version_range  : minecraft_version_range,
+            forge_version            : forge_version,
+            forge_version_range      : forge_version_range,
+            loader_version_range     : loader_version_range,
+            mod_id                   : mod_id,
+            mod_name                 : mod_name,
+            mod_license              : mod_license,
+            mod_version              : mod_version,
+            mod_authors              : mod_authors,
+            mod_description          : mod_description,
     ]
     inputs.properties replaceProperties
 
@@ -120,7 +109,6 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-
     finalizedBy 'reobfJar'
 }
 
@@ -143,6 +131,19 @@ tasks.withType(JavaCompile).configureEach {
 
 dependencyCheck {
     failBuildOnCVSS = 7.0
-    suppressionFile = 'path/to/suppression-file.xml'
+    suppressionFile = 'path/to/suppression-file.xml' // remove or point to a real file if you keep this plugin
     outputDirectory = 'build/reports'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/generated/resources'
+            exclude 'net/**'          // <-- blocks bad package paths from resources
+        }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    exclude 'net/**'
 }

@@ -30,7 +30,7 @@ import net.tacoman.stnmod.events.PlayerRespawnHandler;
 import net.tacoman.stnmod.init.stnmodVillagerProfessions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.bernie.geckolib.GeckoLib;
+
 
 @Mod(stnmod.MODID)
 public class stnmod {
@@ -43,8 +43,7 @@ public class stnmod {
     public stnmod() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Initialize GeckoLib
-        GeckoLib.initialize();
+
 
         modEventBus.addListener(this::setup);
 

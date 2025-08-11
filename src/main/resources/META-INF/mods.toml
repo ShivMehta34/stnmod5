@@ -16,5 +16,5 @@ versionRange="[47.3.5,)"
 side="BOTH"
 
 [modProperties]
-mixinConfigs="mixins.stnmod.json, mixins.geckolib.json"
+mixinConfigs="mixins.stnmod.json"
 
