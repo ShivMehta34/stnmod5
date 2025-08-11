@@ -81,118 +81,139 @@
 
         @Override
         public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-            if (!world.isClientSide) {
-                if (player instanceof ServerPlayer serverPlayer) {
-                    ItemStack itemInHand = serverPlayer.getItemInHand(hand);
+            if (!world.isClientSide && player instanceof ServerPlayer serverPlayer) {
+                ItemStack itemInHand = serverPlayer.getItemInHand(hand);
 
-                    // Check if the player already has a class
-                    CompoundTag persistentData = serverPlayer.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-                    if (persistentData.contains("ChosenClass")) {
-                        if (serverPlayer.experienceLevel >= 40 && countItems(serverPlayer, Items.LAPIS_LAZULI) >= 40 && countItems(serverPlayer, Items.DIAMOND) >= 40) {
+                // -------- Tier 2 UPGRADE (only if the player CURRENTLY HAS a Tier-1 class effect) --------
+                if (hasAnyTier1Effect(serverPlayer)) {
+                    // Need 40 levels + 40 lapis + 40 diamonds AND the correct T2 token in hand
+                    if (serverPlayer.experienceLevel >= 40
+                            && countItems(serverPlayer, Items.LAPIS_LAZULI) >= 40
+                            && countItems(serverPlayer, Items.DIAMOND) >= 40) {
 
-                            // Check the player's current class effect to determine eligible tier 2 class
-                            if (serverPlayer.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.ASSASSIN_CLASS.get()) {
-                                    setClassAssassin(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Thief. You can only upgrade to Assassin."));
-                                }
-                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.KNIGHT_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.PALADIN_CLASS.get()) {
-                                    setClassPaladin(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Knight. You can only upgrade to Paladin."));
-                                }
-                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.GLADIATOR_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.BERSERKER_CLASS.get()) {
-                                    setClassBerserker(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Gladiator. You can only upgrade to Berserker."));
-                                }
-                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.SAMURAI_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.SHOGUN_CLASS.get()) {
-                                    setClassShogun(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Samurai. You can only upgrade to Shogun."));
-                                }
-                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.ELEMENTAL_RANGER_CLASS.get()) {
-                                    setClassELementalRanger(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Ranger. You can only upgrade to Elemental Ranger."));
-                                }
-                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.MARKSMAN_CLASS.get()) {
-                                    setClassMarksman(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Sniper. You can only upgrade to Marksman."));
-                                }
-                            } else if (serverPlayer.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
-                                if (itemInHand.getItem() == ItemRegistry.NIGHTWING_CLASS.get()) {
-                                    setClassMarksman(serverPlayer);
-                                } else {
-                                    serverPlayer.sendSystemMessage(Component.literal("You are a Sniper. You can only upgrade to Marksman."));
-                                }
+                        if (serverPlayer.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.ASSASSIN_CLASS.get()) {
+                                setClassAssassin(serverPlayer);
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Thief. You can only upgrade to Assassin."));
                             }
 
+                        } else if (serverPlayer.hasEffect(PotionEffectRegistry.KNIGHT_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.PALADIN_CLASS.get()) {
+                                setClassPaladin(serverPlayer);
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Knight. You can only upgrade to Paladin."));
+                            }
 
-                            // Add similar checks for other tier 2 classes here...
+                        } else if (serverPlayer.hasEffect(PotionEffectRegistry.GLADIATOR_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.BERSERKER_CLASS.get()) {
+                                setClassBerserker(serverPlayer);
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Gladiator. You can only upgrade to Berserker."));
+                            }
 
-                        } else {
-                            serverPlayer.sendSystemMessage(Component.literal("You need 40 levels, 40 lapis, and 40 diamonds to choose a tier 2 class."));
+                        } else if (serverPlayer.hasEffect(PotionEffectRegistry.SAMURAI_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.SHOGUN_CLASS.get()) {
+                                setClassShogun(serverPlayer);
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Samurai. You can only upgrade to Shogun."));
+                            }
+
+                        } else if (serverPlayer.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.ELEMENTAL_RANGER_CLASS.get()) {
+                                setClassELementalRanger(serverPlayer);
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Ranger. You can only upgrade to Elemental Ranger."));
+                            }
+
+                        } else if (serverPlayer.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.MARKSMAN_CLASS.get()) {
+                                setClassMarksman(serverPlayer);
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Sniper. You can only upgrade to Marksman."));
+                            }
+
+                        } else if (serverPlayer.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
+                            if (itemInHand.getItem() == ItemRegistry.NIGHTWING_CLASS.get()) {
+                                setClassNightwing(serverPlayer); // ✅ fixed mapping
+                            } else {
+                                serverPlayer.sendSystemMessage(Component.literal("You are a Ninja. You can only upgrade to Nightwing.")); // ✅ fixed message
+                            }
                         }
-                        return InteractionResult.SUCCESS;
-                    }
 
-                    // Logic for choosing tier 1 class remains the same
-                    if (serverPlayer.experienceLevel >= 40 && countItems(serverPlayer, Items.LAPIS_LAZULI) >= 40) {
-                        boolean classItemUsed = false;
-
-                        if (itemInHand.getItem() == ItemRegistry.GLADIATOR_CLASS.get()) {
-                            setClassGladiator(serverPlayer);
-                            classItemUsed = true;
-                        } else if (itemInHand.getItem() == ItemRegistry.KNIGHT_CLASS.get()) {
-                            setClassKnight(serverPlayer);
-                            classItemUsed = true;
-                        } else if (itemInHand.getItem() == ItemRegistry.RANGER_CLASS.get()) {
-                            setClassRanger(serverPlayer);
-                            classItemUsed = true;
-                        } else if (itemInHand.getItem() == ItemRegistry.SNIPER_CLASS.get()) {
-                            setClassSniper(serverPlayer);
-                            classItemUsed = true;
-                        } else if (itemInHand.getItem() == ItemRegistry.THIEF_CLASS.get()) {
-                            setClassThief(serverPlayer);
-                            classItemUsed = true;
-                        } else if (itemInHand.getItem() == ItemRegistry.NINJA_CLASS.get()) {
-                            setClassNinja(serverPlayer);
-                            classItemUsed = true;
-                        } else if (itemInHand.getItem() == ItemRegistry.SAMURAI_CLASS.get()) {
-                            setClassSamurai(serverPlayer);
-                            classItemUsed = true;
-                        }
-
-                        if (classItemUsed) {
-                            persistentData.putString("ChosenClass", itemInHand.getItem().toString());
-                            serverPlayer.getPersistentData().put(Player.PERSISTED_NBT_TAG, persistentData);
-                        } else {
-                            giveClassDescriptionBook(serverPlayer);
-                            serverPlayer.sendSystemMessage(Component.literal("Right click with a class token to choose your class"));
-
-                            // Give all class items
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.GLADIATOR_CLASS.get()));
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.KNIGHT_CLASS.get()));
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.RANGER_CLASS.get()));
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.SNIPER_CLASS.get()));
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.THIEF_CLASS.get()));
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.NINJA_CLASS.get()));
-                            serverPlayer.addItem(new ItemStack(ItemRegistry.SAMURAI_CLASS.get()));
-                        }
                     } else {
-                        serverPlayer.sendSystemMessage(Component.literal("You need 40 levels and 40 lapis to choose a class."));
+                        serverPlayer.sendSystemMessage(Component.literal("You need 40 levels, 40 lapis, and 40 diamonds to choose a tier 2 class."));
                     }
+                    return InteractionResult.SUCCESS;
+                }
+
+                // -------- Tier 1 CHOOSE / GIVE TOKENS (player has NO class yet) --------
+                if (serverPlayer.experienceLevel >= 40 && countItems(serverPlayer, Items.LAPIS_LAZULI) >= 40) {
+                    boolean classItemUsed = false;
+
+                    if (itemInHand.getItem() == ItemRegistry.GLADIATOR_CLASS.get()) {
+                        setClassGladiator(serverPlayer);
+                        classItemUsed = true;
+
+                    } else if (itemInHand.getItem() == ItemRegistry.KNIGHT_CLASS.get()) {
+                        setClassKnight(serverPlayer);
+                        classItemUsed = true;
+
+                    } else if (itemInHand.getItem() == ItemRegistry.RANGER_CLASS.get()) {
+                        setClassRanger(serverPlayer);
+                        classItemUsed = true;
+
+                    } else if (itemInHand.getItem() == ItemRegistry.SNIPER_CLASS.get()) {
+                        setClassSniper(serverPlayer);
+                        classItemUsed = true;
+
+                    } else if (itemInHand.getItem() == ItemRegistry.THIEF_CLASS.get()) {
+                        setClassThief(serverPlayer);
+                        classItemUsed = true;
+
+                    } else if (itemInHand.getItem() == ItemRegistry.NINJA_CLASS.get()) {
+                        setClassNinja(serverPlayer);
+                        classItemUsed = true;
+
+                    } else if (itemInHand.getItem() == ItemRegistry.SAMURAI_CLASS.get()) {
+                        setClassSamurai(serverPlayer);
+                        classItemUsed = true;
+                    }
+
+                    if (classItemUsed) {
+                        // record the chosen class in PlayerPersisted
+                        CompoundTag root = serverPlayer.getPersistentData();
+                        CompoundTag persisted = root.getCompound(Player.PERSISTED_NBT_TAG);
+                        persisted.putString("ChosenClass", itemInHand.getItem().toString());
+                        root.put(Player.PERSISTED_NBT_TAG, persisted);
+                    } else {
+                        // Give info + all Tier-1 tokens if not holding a token
+                        giveClassDescriptionBook(serverPlayer);
+                        serverPlayer.sendSystemMessage(Component.literal("Right-click with a class token to choose your class."));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.GLADIATOR_CLASS.get()));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.KNIGHT_CLASS.get()));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.RANGER_CLASS.get()));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.SNIPER_CLASS.get()));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.THIEF_CLASS.get()));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.NINJA_CLASS.get()));
+                        serverPlayer.addItem(new ItemStack(ItemRegistry.SAMURAI_CLASS.get()));
+                    }
+                } else {
+                    serverPlayer.sendSystemMessage(Component.literal("You need 40 levels and 40 lapis to choose a class."));
                 }
             }
             return InteractionResult.SUCCESS;
+        }
+
+        /** Treat the player as “has a class” only if they actually have a Tier-1 class effect active. */
+        private boolean hasAnyTier1Effect(ServerPlayer p) {
+            return p.hasEffect(PotionEffectRegistry.THIEF_STRENGTH.get())
+                    || p.hasEffect(PotionEffectRegistry.KNIGHT_STRENGTH.get())
+                    || p.hasEffect(PotionEffectRegistry.GLADIATOR_STRENGTH.get())
+                    || p.hasEffect(PotionEffectRegistry.SAMURAI_STRENGTH.get())
+                    || p.hasEffect(PotionEffectRegistry.RANGER_STRENGTH.get())
+                    || p.hasEffect(PotionEffectRegistry.SNIPER_STRENGTH.get())
+                    || p.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get());
         }
 
         private void giveTierTwoClassItems(ServerPlayer player) {
@@ -248,7 +269,7 @@
             AttributeInstance movementSpeed = player.getAttribute(Attributes.MOVEMENT_SPEED);
             if (movementSpeed != null) {
                 movementSpeed.removeModifier(NIGHTWING_SPEED_MODIFIER_UUID);
-                movementSpeed.addPermanentModifier(new AttributeModifier(NIGHTWING_SPEED_MODIFIER_UUID, "Nightwing speed boost", 0.050, AttributeModifier.Operation.ADDITION));
+                movementSpeed.addPermanentModifier(new AttributeModifier(NIGHTWING_SPEED_MODIFIER_UUID, "Nightwing speed boost", 0.040, AttributeModifier.Operation.ADDITION));
             }
 
             // Apply custom Assassin effect for increased damage

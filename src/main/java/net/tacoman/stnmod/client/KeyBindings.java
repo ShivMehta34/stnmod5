@@ -77,6 +77,10 @@ public class KeyBindings {
     private static long lastWhirlwindTime = 0;
     private static long lastDashingStrikeTime = 0;
     private static long lastGrappleTime = 0;
+    private static long lastSmokeBombTime= 0;
+    private static long lastDoubleFangsTime= 0;
+    private static long lastSleepBombTime = 0;
+    private static long lastPoisonBombTime = 0;
 
 
     private static Entity targetedEntity; // Store the entity targeted by Armor Breaker
@@ -96,6 +100,10 @@ public class KeyBindings {
     private static final long WHIRLWIND_COOLDOWN = 12000; // 12s
     private static final long DASHING_STRIKE_COOLDOWN = 20000;
     private static final long GRAPPLE_COOLDOWN = 60000; // 1 minute cooldown
+    private static final long SMOKE_BOMB_COOLDOWN = 60000;
+    private static final long DOUBLE_FANGS_COOLDOWN = 90000;
+    private static final long SLEEP_BOMB_COOLDOWN = 90000;
+    private static final long POISON_BOMB_COOLDOWN = 90000;
 
 
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -319,6 +327,27 @@ public class KeyBindings {
                     player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before grappling again."));
                     LOGGER.info("Cooldown period active. Clones cannot grapple yet.");
                 }
+            } else if (player.hasEffect(PotionEffectRegistry.NIGHTWING_STRENGTH.get())) {
+                long timeLeft = POISON_BOMB_COOLDOWN - (currentTime - lastPoisonBombTime);
+
+                if (timeLeft <= 0) {
+                    lastPoisonBombTime = currentTime;
+                    LOGGER.info("Poison Bomb activated by player (Nightwing): " + player.getName().getString());
+
+                    player.sendSystemMessage(Component.literal("☠ Poison Bomb!"));
+
+                    // Tell the server to apply AoE poison/slow/wither/nausea + green visuals
+                    NetworkHandler.sendToServer(new NightwingPoisonBombC2SPacket());
+
+                    // Optional: “ready again” ping later
+                    // scheduler.schedule(() -> {}, POISON_BOMB_COOLDOWN, TimeUnit.MILLISECONDS);
+
+                } else {
+                    player.sendSystemMessage(Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Poison Bomb again."
+                    ));
+                    LOGGER.info("Cooldown active. Poison Bomb cannot be activated yet.");
+                }
             }
         }
 
@@ -346,9 +375,29 @@ public class KeyBindings {
                     player.sendSystemMessage(Component.literal("Please wait " + (timeLeft / 1000) + " seconds before using Elemental Ranger ability again."));
                     LOGGER.info("Cooldown period active. Elemental Ranger ability cannot be activated yet.");
                 }
+            } else if (player.hasEffect(PotionEffectRegistry.NIGHTWING_STRENGTH.get())) {
+                long timeLeft = SLEEP_BOMB_COOLDOWN - (currentTime - lastSleepBombTime);
+
+                if (timeLeft <= 0) {
+                    lastSleepBombTime = currentTime;
+                    LOGGER.info("Sleep Bomb activated by player (Nightwing): " + player.getName().getString());
+                    player.sendSystemMessage(Component.literal("Sleep Bomb!"));
+
+                    // Tell the server to apply freeze + purple ring
+                    NetworkHandler.sendToServer(new NightwingSleepBombC2SPacket());
+
+                    // Optional “ready again” ping later
+                    // scheduler.schedule(() -> player.sendSystemMessage(Component.literal("Sleep Bomb is ready.")),
+                    //         SLEEP_BOMB_COOLDOWN, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+                } else {
+                    player.sendSystemMessage(Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Sleep Bomb again."
+                    ));
+                    LOGGER.info("Cooldown active. Sleep Bomb cannot be activated yet.");
+                }
             }
         }
-
 
 
 
@@ -421,25 +470,60 @@ public class KeyBindings {
                 }
 
             } else if (player.hasEffect(net.tacoman.stnmod.init.PotionEffectRegistry.ASSASSIN_STRENGTH.get())) {
-                // Try to acquire a target under crosshair (optional)
-                net.minecraft.world.entity.Entity tgt =
-                        net.tacoman.stnmod.client.CrosshairPick.livingUnderCrosshair(8.0D); // 8 blocks reach
-                int id = (tgt != null) ? tgt.getId() : -1;
+                long timeLeft = DOUBLE_FANGS_COOLDOWN - (currentTime - lastDoubleFangsTime);
 
-                // Send to server
-                net.tacoman.stnmod.network.NetworkHandler.CHANNEL.sendToServer(
-                        new net.tacoman.stnmod.network.DoubleFangsC2SPacket(id)
-                );
+                if (timeLeft <= 0) {
+                    lastDoubleFangsTime = currentTime;
+                    LOGGER.info("Double Fangs activated by player (Assassin): " + player.getName().getString());
 
-                // Feedback
-                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Double Fangs! Leap and strike."));
-            } else if (player.hasEffect(net.tacoman.stnmod.init.PotionEffectRegistry.NIGHTWING_STRENGTH.get())) {
-                // Trigger Nightwing Smoke Bomb on server
-                net.tacoman.stnmod.network.NetworkHandler.CHANNEL.sendToServer(
-                        new net.tacoman.stnmod.network.NightwingSmokeBombC2SPacket()
-                );
+                    player.sendSystemMessage(Component.literal("Double Fangs! Leap and strike."));
 
+                    // Try to pass a target id for better leap direction (optional)
+                    net.minecraft.world.entity.Entity tgt =
+                            net.tacoman.stnmod.client.CrosshairPick.livingUnderCrosshair(8.0D);
+                    int id = (tgt != null) ? tgt.getId() : -1;
+
+                    // Tell the server to launch + arm the mid-air finisher
+                    NetworkHandler.sendToServer(new DoubleFangsC2SPacket(id));
+
+                    // Optional: ping when ready again
+                    scheduler.schedule(() -> {
+                        // player.sendSystemMessage(Component.literal("Double Fangs is ready again."));
+                    }, DOUBLE_FANGS_COOLDOWN, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+                }
+                else {
+                    player.sendSystemMessage(Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Double Fangs again."
+                    ));
+                    LOGGER.info("Cooldown active. Double Fangs cannot be activated yet.");
+                }
+
+            }else if (player.hasEffect(PotionEffectRegistry.NINJA_STRENGTH.get())) {
+                long timeLeft = SMOKE_BOMB_COOLDOWN - (currentTime - lastSmokeBombTime);
+
+                if (timeLeft <= 0) {
+                    lastSmokeBombTime = currentTime;
+                    LOGGER.info("Smoke Bomb activated by player (Nightwing): " + player.getName().getString());
+
+                    player.sendSystemMessage(Component.literal("Smoke Bomb!"));
+
+                    // Tell the server to spawn the big cloud + blind + teleport
+                    NetworkHandler.sendToServer(new NightwingSmokeBombC2SPacket());
+
+                    // Optional: ping when ready again
+                    scheduler.schedule(() -> {
+                        // player.sendSystemMessage(Component.literal("Smoke Bomb is ready again."));
+                    }, SMOKE_BOMB_COOLDOWN, java.util.concurrent.TimeUnit.MILLISECONDS);
+
+                } else {
+                    player.sendSystemMessage(Component.literal(
+                            "Please wait " + (timeLeft / 1000) + " seconds before using Smoke Bomb again."
+                    ));
+                    LOGGER.info("Cooldown active. Smoke Bomb cannot be activated yet.");
+                }
             }
+
         }
 
 

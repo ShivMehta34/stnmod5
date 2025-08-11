@@ -17,35 +17,32 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 import net.tacoman.stnmod.init.EntityRegistry;
 import net.tacoman.stnmod.init.ItemRegistry;
+import net.tacoman.stnmod.init.PotionEffectRegistry; // <-- added
 
 public class ShurikenEntity extends ThrowableItemProjectile {
 
     // ---- Tunables ----
-    private static final float BASE_DAMAGE = 4.0f;   // 2 hearts
-    private static final boolean PIERCE = false;     // set true to pass through first hit
+    private static final float BASE_DAMAGE = 4.0f;   // current baseline (2 hearts)
+    private static final boolean PIERCE = false;
     private static final float KNOCKBACK = 0.35f;
     private static final float GRAVITY = 0.01f;
 
     private int hits = 0;
 
-    // Required empty ctor for the engine
     public ShurikenEntity(EntityType<? extends ShurikenEntity> type, Level level) {
         super(type, level);
     }
 
-    // Convenience ctor used by the item
     public ShurikenEntity(Level level, LivingEntity thrower) {
         super(EntityRegistry.SHURIKEN.get(), thrower, level);
         this.setOwner(thrower);
     }
 
-    // Make sure clients can see spawns from server
     @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
-    // For ThrownItemRenderer (uses the item's texture/model)
     @Override
     protected Item getDefaultItem() {
         return ItemRegistry.SHURIKEN.get();
@@ -65,12 +62,13 @@ public class ShurikenEntity extends ThrowableItemProjectile {
         Entity target = hit.getEntity();
         Entity owner = getOwner();
 
-        // Build a proper thrown damage source
         DamageSource src = this.damageSources().thrown(this, owner);
 
-        boolean damaged = target.hurt(src, BASE_DAMAGE);
+        // >>> damage: 2x by default, 6x if thrower has NIGHTWING_STRENGTH
+        float damage = computeDamage(owner);
+
+        boolean damaged = target.hurt(src, damage);
         if (damaged) {
-            // tiny push away to sell impact
             Vec3 push = target.position().subtract(this.position()).normalize().scale(KNOCKBACK);
             target.setDeltaMovement(target.getDeltaMovement().add(push.x, 0.05, push.z));
             target.hurtMarked = true;
@@ -80,8 +78,17 @@ public class ShurikenEntity extends ThrowableItemProjectile {
 
         hits++;
         if (!PIERCE || hits >= 1) {
-            this.discard(); // stop after first hit (default)
+            this.discard();
         }
+    }
+
+    private float computeDamage(Entity owner) {
+        float multiplier = 2.0f; // default: double damage
+        if (owner instanceof LivingEntity le &&
+                le.hasEffect(PotionEffectRegistry.NIGHTWING_STRENGTH.get())) {
+            multiplier = 6.0f;    // Nightwing: triple “normal” → 6x current baseline
+        }
+        return BASE_DAMAGE * multiplier;
     }
 
     // -- Collision with blocks --
@@ -89,7 +96,6 @@ public class ShurikenEntity extends ThrowableItemProjectile {
     protected void onHit(HitResult result) {
         super.onHit(result);
         if (!level().isClientSide) {
-            // Drop a recoverable shuriken on block hit
             spawnAtLocation(new ItemStack(ItemRegistry.SHURIKEN.get()), 0.1f);
             level().playSound(null, getX(), getY(), getZ(),
                     SoundEvents.TRIDENT_HIT_GROUND, SoundSource.PLAYERS, 0.6f, 1.2f);
@@ -97,7 +103,6 @@ public class ShurikenEntity extends ThrowableItemProjectile {
         }
     }
 
-    // Save/Load (optional)
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);

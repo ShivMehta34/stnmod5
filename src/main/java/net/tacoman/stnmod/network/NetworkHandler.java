@@ -38,6 +38,10 @@ public class NetworkHandler {
         CHANNEL.registerMessage(id++, ArmorBreakerC2SPacket.class, ArmorBreakerC2SPacket::encode, ArmorBreakerC2SPacket::decode, ArmorBreakerC2SPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, DoubleFangsC2SPacket.class, DoubleFangsC2SPacket::encode, DoubleFangsC2SPacket::decode, DoubleFangsC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, NightwingSmokeBombC2SPacket.class, NightwingSmokeBombC2SPacket::encode, NightwingSmokeBombC2SPacket::decode, NightwingSmokeBombC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, NightwingSleepBombC2SPacket.class, NightwingSleepBombC2SPacket::encode, NightwingSleepBombC2SPacket::decode, NightwingSleepBombC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, NightwingPoisonBombC2SPacket.class, NightwingPoisonBombC2SPacket::encode, NightwingPoisonBombC2SPacket::decode, NightwingPoisonBombC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, NightwingGlideToggleC2SPacket.class, NightwingGlideToggleC2SPacket::encode, NightwingGlideToggleC2SPacket::decode, NightwingGlideToggleC2SPacket::handle, java.util.Optional.of(net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER));
+
     }
 
     public static void sendToServer(Object packet) {
