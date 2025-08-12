@@ -138,12 +138,10 @@ dependencyCheck {
 sourceSets {
     main {
         resources {
-            srcDir 'src/generated/resources'
-            exclude 'net/**'          // <-- blocks bad package paths from resources
+            // Never ship Java packages or compiled files as resources
+            exclude 'net/**'
+            exclude '**/*.class'
+            exclude '**/*.java'
         }
     }
-}
-
-tasks.named('processResources', ProcessResources).configure {
-    exclude 'net/**'
 }
