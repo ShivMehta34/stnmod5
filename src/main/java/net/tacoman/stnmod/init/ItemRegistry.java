@@ -175,6 +175,18 @@ public class ItemRegistry {
     public static final RegistryObject<Item> REINFORCED_LEATHER_BOOTS = ITEMS.register("reinforced_leather_boots",
             () -> new ArmorItem(ModArmorMaterials.REINFORCED_LEATHER, ArmorItem.Type.BOOTS, new Item.Properties()));
 
+    public static final RegistryObject<Item> PALADIN_HELMET = ITEMS.register("paladin_helmet",
+            () -> new PaladinArmorItem(ModArmorMaterials.PALADIN, ArmorItem.Type.HELMET, new Item.Properties()));
+
+    public static final RegistryObject<Item> PALADIN_CHESTPLATE = ITEMS.register("paladin_chestplate",
+            () -> new PaladinArmorItem(ModArmorMaterials.PALADIN, ArmorItem.Type.CHESTPLATE, new Item.Properties()));
+
+    public static final RegistryObject<Item> PALADIN_LEGGINGS = ITEMS.register("paladin_leggings",
+            () -> new PaladinArmorItem(ModArmorMaterials.PALADIN, ArmorItem.Type.LEGGINGS, new Item.Properties()));
+
+    public static final RegistryObject<Item> PALADIN_BOOTS = ITEMS.register("paladin_boots",
+            () -> new PaladinArmorItem(ModArmorMaterials.PALADIN, ArmorItem.Type.BOOTS, new Item.Properties()));
+
 
     // --- Shuriken (Ninja-only item class lives in net.tacoman.stnmod.items) ---
     public static final RegistryObject<Item> SHURIKEN = ITEMS.register("shuriken",

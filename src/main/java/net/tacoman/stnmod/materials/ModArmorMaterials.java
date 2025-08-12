@@ -17,7 +17,11 @@ public enum ModArmorMaterials implements ArmorMaterial {
     REINFORCED_LEATHER("reinforced_leather", 15, new int[]{2, 5, 6, 2}, 25, SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.0F, () -> Ingredient.of(Items.LEATHER)),
     NINJA_ROBE("ninja_robe", 20, new int[]{2, 5, 6, 2}, 25, SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.0F, () -> Ingredient.of(Items.LEATHER)),
     DIAMOND_CHAIN("diamond_chain", 33, new int[]{3, 6, 8, 3}, 12, SoundEvents.ARMOR_EQUIP_CHAIN, 2.0F, 0.0F, () -> Ingredient.of(Items.CHAIN)),
-    THIEF_CLOAK("thief_cloak", 20, new int[]{2, 5, 6, 2}, 25, SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.0F, () -> Ingredient.of(Items.LEATHER));
+    THIEF_CLOAK("thief_cloak", 20, new int[]{2, 5, 6, 2}, 25, SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.0F, () -> Ingredient.of(Items.LEATHER)),
+    PALADIN("paladin", 60, new int[]{3, 8, 10, 3}, 17, SoundEvents.ARMOR_EQUIP_DIAMOND, 4.5F, 0.25F, () -> Ingredient.of(Items.NETHERITE_INGOT));
+
+
+
 
     private static final int[] BASE_DURABILITY = new int[]{13, 15, 16, 11};
     private final String name;
